@@ -20,6 +20,8 @@ texture.repeat.set( 9, 1 );
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 
+var lastClickedMesh
+
 function onMouseMove(event) {
   // calculate mouse position in normalized device coordinates
   // (-1 to +1) for both components
@@ -64,9 +66,15 @@ function onMouseClick(event) {
 
    var intersects = raycaster.intersectObjects(scene.children, true);
    console.log(intersects)
-
-   if(intersects){
+    lastClickedMesh.material.transparent=false
+   if(intersects[0]){
       console.log(intersects[0])
+      if(intersects[0].object.type==="Mesh"){
+         //intersects[0].object.material.wireframe = true
+         intersects[0].object.material.transparent= true
+         intersects[0].object.material.opacity = 0.5
+         lastClickedMesh = intersects[0].object
+      }
      //intersects[0].object.material.wireframe = true
    }
 
@@ -82,7 +90,7 @@ function App() {
 
   function init() {
     window.addEventListener( 'click', onMouseClick, false );
-    window.addEventListener( 'mousemove', onMouseMove, false );
+    //window.addEventListener( 'mousemove', onMouseMove, false );
     camera = new THREE.PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
@@ -110,6 +118,8 @@ function App() {
 
     tmesh.add(mesh)
     scene.add(tmesh);
+
+    lastClickedMesh = mesh
 
 
 
@@ -165,7 +175,7 @@ function App() {
     requestAnimationFrame(animate);
 
     mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
+    //mesh.rotation.y += 0.02;
 
    
     renderer.render(scene, camera);
