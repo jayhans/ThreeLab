@@ -71,6 +71,7 @@ function onMouseClick(event) {
       console.log(intersects[0])
       if(intersects[0].object.type==="Mesh"){
          //intersects[0].object.material.wireframe = true
+         console.log(intersects[0].object.userData)
          intersects[0].object.material.transparent= true
          intersects[0].object.material.opacity = 0.5
          lastClickedMesh = intersects[0].object
@@ -113,6 +114,7 @@ function App() {
   
 
     mesh = new THREE.Mesh(geometry, material);
+    mesh.userData = {"철근정보":999}
 
     mesh.position.set(10, 0, 0)
 
