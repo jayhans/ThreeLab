@@ -25,7 +25,7 @@ function App() {
     scene = new THREE.Scene();
 
     geometry = new THREE.BoxGeometry(2, 2, 2);
-    material = new THREE.MeshNormalMaterial();
+    var material = new THREE.MeshBasicMaterial( { color: 0x2194CE } );
 
     mesh = new THREE.Mesh(geometry, material);
     //mesh.position.set(10, 0, 0)
@@ -48,6 +48,20 @@ function App() {
     var AxesHelper = new THREE.AxesHelper(50)
     AxesHelper.position.set(0,0,0.1)
     scene.add(AxesHelper)
+
+    var light = new THREE.AmbientLight( 0x000000 );
+scene.add( light );
+
+var lights = [];
+			lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+			lights[ 1 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+			lights[ 2 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+			lights[ 0 ].position.set( 0, 200, 0 );
+			lights[ 1 ].position.set( 100, 200, 100 );
+			lights[ 2 ].position.set( - 100, - 200, - 100 );
+			scene.add( lights[ 0 ] );
+			scene.add( lights[ 1 ] );
+			scene.add( lights[ 2 ] );
 
     //THREE.Def
   }
