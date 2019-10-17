@@ -5,8 +5,13 @@ import "./App.css";
 import * as THREE from "three";
 import OrbitControls from "three-orbitcontrols";
 
+import Stats from 'stats.js'
+
 var camera, scene, renderer;
 var geometry, material, mesh;
+
+var stats = new Stats();
+stats.showPanel( 0 ); // 0:fps, 1:ms, 2: mb, 3+: custom
 
 function App() {
   var threeRef = useRef(null);
@@ -39,6 +44,7 @@ function App() {
     controls.dampingFactor = 0.25;
     controls.enableZoom = true;
     threeRef.current.appendChild(renderer.domElement);
+    threeRef.current.appendChild(stats.dom)
 
     var GridHelper = new THREE.GridHelper(1000,100)
     //  y z axis exchange
@@ -67,6 +73,9 @@ var lights = [];
   }
 
   function animate() {
+    stats.begin();
+    stats.end();
+
     requestAnimationFrame(animate);
 
     mesh.rotation.x += 0.01;
