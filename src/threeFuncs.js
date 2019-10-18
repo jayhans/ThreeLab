@@ -47,6 +47,9 @@ export function DrawRamenFix(
 
     var ramenPivot = new THREE.Mesh(pivotGeo, pivotMat);
     ramenPivot.position.set(0,0,0)
+
+    var ramenPivot1 = new THREE.Mesh(pivotGeo, pivotMat);
+    ramenPivot1.position.set(ramenWidth,0,0)
   
     //Ramen Beam
     var rbgeometry = new THREE.BoxGeometry(ramenWidth, ramenColumnXY, ramenBeamZ);
@@ -73,14 +76,15 @@ export function DrawRamenFix(
       
     });
     var ramenCol2 = new THREE.Mesh(geometry2, material2);
-    ramenCol2.position.set(ramenWidth - ramenColumnXY / 2, ramenPosZ, height / 2);
+    ramenCol2.position.set(-ramenColumnXY / 2, ramenPosZ, height / 2);
   
     beamPivot.add(ramenBeam);
     pivotPoint.add(beamPivot);
     ramenPivot.add(ramenCol1)
     //pivotPoint.add(ramenCol1);
+    ramenPivot1.add(ramenCol2);
     pivotPoint.add(ramenPivot)
-    pivotPoint.add(ramenCol2);
+    pivotPoint.add(ramenPivot1)
     //pivotPoint.add(tramenBeam)
     //pivotPoint.rotation.set(0, 0, Math.PI / 2);
   

@@ -258,7 +258,8 @@ function App() {
       ramenMesh.children[2].position.x = v * ramenWidth;
 
     });;
-    gui.add(Adbo, "height").onChange(v=>{
+    gui.add(Adbo, "height").step(0.1).onChange(v=>{
+      ramenMesh.children[0].position.z = v * height
       ramenMesh.children[1].scale.z =v
       ramenMesh.children[2].scale.z =v
     })
