@@ -134,7 +134,7 @@ function App() {
     mesh.position.set(10, 0, 0);
 
     tmesh.add(mesh);
-    scene.add(tmesh);
+    //scene.add(tmesh);
 
     lastClickedMesh = mesh;
 
@@ -147,6 +147,7 @@ function App() {
     controls.enableZoom = true;
     threeRef.current.appendChild(renderer.domElement);
     threeRef.current.appendChild(stats.dom);
+    
 
     var GridHelper = new THREE.GridHelper(1000, 100);
     //  y z axis exchange
@@ -193,12 +194,19 @@ function App() {
     );
 
     let materialArray = [];
-    let texture_ft = new THREE.TextureLoader().load("Daylight Box_Front.bmp");
-    let texture_bk = new THREE.TextureLoader().load("Daylight Box_Back.bmp");
-    let texture_up = new THREE.TextureLoader().load("Box_Top.bmp");
-    let texture_dn = new THREE.TextureLoader().load("Daylight Box_Bottom.bmp");
-    let texture_rt = new THREE.TextureLoader().load("Daylight Box_Right.bmp");
-    let texture_lf = new THREE.TextureLoader().load("Daylight Box_Left.bmp");
+    let texture_ft = new THREE.TextureLoader().load( 'arid2_ft.jpg');
+    let texture_bk = new THREE.TextureLoader().load( 'arid2_bk.jpg');
+    let texture_up = new THREE.TextureLoader().load( 'arid2_up.jpg');
+    let texture_dn = new THREE.TextureLoader().load( 'arid2_dn.jpg');
+    let texture_rt = new THREE.TextureLoader().load( 'arid2_rt.jpg');
+    let texture_lf = new THREE.TextureLoader().load( 'arid2_lf.jpg');
+
+    // let texture_ft = new THREE.TextureLoader().load( 'mystic_ft.jpg');
+    // let texture_bk = new THREE.TextureLoader().load( 'mystic_bk.jpg');
+    // let texture_up = new THREE.TextureLoader().load( 'mystic_up.jpg');
+    // let texture_dn = new THREE.TextureLoader().load( 'mystic_dn.jpg');
+    // let texture_rt = new THREE.TextureLoader().load( 'mystic_rt.jpg');
+    // let texture_lf = new THREE.TextureLoader().load( 'mystic_lf.jpg');
 
     materialArray.push(new THREE.MeshBasicMaterial({ map: texture_ft }));
     materialArray.push(new THREE.MeshBasicMaterial({ map: texture_bk }));
