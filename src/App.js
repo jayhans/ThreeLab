@@ -9,6 +9,8 @@ import Stats from "stats.js";
 
 import { DrawRamenFix } from "./threeFuncs";
 
+import dat from "dat.gui";
+
 var camera, scene, renderer;
 var geometry, material, mesh;
 
@@ -24,6 +26,17 @@ var [
   floorHeight
 ] = sampleVar;
 
+var AdboObject = function() {
+  this.ramenWidth = 43;
+  this.ramenColumnXY= 5;
+  this.ramenBeamZ= 4;
+  this.height= 27;
+  this.spanLength=0 ;
+  this.pivotMode= 0;
+  this.floor= 1;
+  this.floorHeight= 30;
+};
+
 var stats = new Stats();
 stats.showPanel(0); // 0:fps, 1:ms, 2: mb, 3+: custom
 
@@ -35,6 +48,12 @@ var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 
 var lastClickedMesh;
+
+var FizzyText = function() {
+  this.message = "dat.gui";
+  this.speed = 0.8;
+  this.displayOutline = false;
+};
 
 function onMouseMove(event) {
   // calculate mouse position in normalized device coordinates
@@ -147,7 +166,6 @@ function App() {
     controls.enableZoom = true;
     threeRef.current.appendChild(renderer.domElement);
     threeRef.current.appendChild(stats.dom);
-    
 
     var GridHelper = new THREE.GridHelper(1000, 100);
     //  y z axis exchange
@@ -194,12 +212,12 @@ function App() {
     );
 
     let materialArray = [];
-    let texture_ft = new THREE.TextureLoader().load( 'arid2_ft.jpg');
-    let texture_bk = new THREE.TextureLoader().load( 'arid2_bk.jpg');
-    let texture_up = new THREE.TextureLoader().load( 'arid2_up.jpg');
-    let texture_dn = new THREE.TextureLoader().load( 'arid2_dn.jpg');
-    let texture_rt = new THREE.TextureLoader().load( 'arid2_rt.jpg');
-    let texture_lf = new THREE.TextureLoader().load( 'arid2_lf.jpg');
+    let texture_ft = new THREE.TextureLoader().load("arid2_ft.jpg");
+    let texture_bk = new THREE.TextureLoader().load("arid2_bk.jpg");
+    let texture_up = new THREE.TextureLoader().load("arid2_up.jpg");
+    let texture_dn = new THREE.TextureLoader().load("arid2_dn.jpg");
+    let texture_rt = new THREE.TextureLoader().load("arid2_rt.jpg");
+    let texture_lf = new THREE.TextureLoader().load("arid2_lf.jpg");
 
     // let texture_ft = new THREE.TextureLoader().load( 'mystic_ft.jpg');
     // let texture_bk = new THREE.TextureLoader().load( 'mystic_bk.jpg');
@@ -219,10 +237,34 @@ function App() {
 
     let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
     let skybox = new THREE.Mesh(skyboxGeo, materialArray);
-    skybox.rotation.set(Math.PI/2, 0, 0)
+    skybox.rotation.set(Math.PI / 2, 0, 0);
     scene.add(skybox);
 
     scene.add(ramenMesh);
+    console.log(ramenMesh);
+
+    //var text = new FizzyText();
+    var Adbo = new AdboObject()
+    var gui = new dat.GUI();
+    gui.add(ramenMesh, "visible");
+    gui.add(ramenMesh.material, "transparent");
+    gui.add(ramenMesh.material, "opacity");
+    gui.add(ramenMesh.children[0].scale, "x").onChange(v => {
+      ramenMesh.children[2].position.x = v * ramenWidth;
+    });
+    gui.add(ramenMesh.children[2].position, "x");
+    gui.add(Adbo, "ramenWidth").step(0.1).onChange(v => {
+      ramenMesh.children[0].scale.x = v
+      ramenMesh.children[2].position.x = v * ramenWidth;
+
+    });;
+    gui.add(Adbo, "height").onChange(v=>{
+      ramenMesh.children[1].scale.z =v
+      ramenMesh.children[2].scale.z =v
+    })
+    //gui.add(ramenMesh.object, 'opacity');
+    //gui.add(ramenMesh, 'speed', -5, 5);
+    //gui.add(ramenMesh, 'displayOutline');
   }
 
   function animate() {
