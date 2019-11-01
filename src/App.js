@@ -164,6 +164,7 @@ function App() {
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
     controls.enableZoom = true;
+    controls.screenSpacePanning = true;
     threeRef.current.appendChild(renderer.domElement);
     threeRef.current.appendChild(stats.dom);
 
