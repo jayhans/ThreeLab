@@ -173,7 +173,7 @@ function App() {
     GridHelper.rotation.set(Math.PI / 2, 0, 0);
     scene.add(GridHelper);
 
-    var AxesHelper = new THREE.AxesHelper(50);
+    var AxesHelper = new THREE.AxesHelper(30);
     AxesHelper.position.set(0, 0, 0.1);
     scene.add(AxesHelper);
 
@@ -241,8 +241,50 @@ function App() {
     skybox.rotation.set(Math.PI / 2, 0, 0);
     scene.add(skybox);
 
-    scene.add(ramenMesh);
+    //scene.add(ramenMesh);
     console.log(ramenMesh);
+
+    
+
+ // Rounded rectangle
+ var roundedRectShape = new THREE.Shape();
+ ( function roundedRect( ctx, x, y, width, height, radius ) {
+   ctx.moveTo( x, y + radius );
+   ctx.lineTo( x, y + height - radius );
+   ctx.quadraticCurveTo( x, y + height, x + radius, y + height );
+   ctx.lineTo( x + width - radius, y + height );
+   ctx.quadraticCurveTo( x + width, y + height, x + width, y + height - radius );
+   ctx.lineTo( x + width, y + radius );
+   ctx.quadraticCurveTo( x + width, y, x + width - radius, y );
+   ctx.lineTo( x + radius, y );
+   ctx.quadraticCurveTo( x, y, x, y + radius );
+ } )( roundedRectShape, 0, 0, 150, 50, 20 );
+
+ var extrudeSettings = { depth: 8, bevelEnabled: true, bevelSegments: 2, steps: 2, bevelSize: 1, bevelThickness: 1 };
+ //addShape( roundedRectShape, extrudeSettings, 0x008000, - 150, 150, 0, 0, 0, 0, 1 );
+
+ roundedRectShape.autoClose = true;
+ var points = roundedRectShape.getPoints();
+ 
+ var geometryPoints = new THREE.BufferGeometry().setFromPoints( points );
+ 
+ // solid line
+ var line = new THREE.Line( geometryPoints, new THREE.LineBasicMaterial( { color: extrudeSettings } ) );
+ line.position.set( 0,0,0 );
+ line.rotation.set(Math.PI/2,0,0 );
+ line.scale.set( 1,1,1 );
+ scene.add( line );
+
+ var line2 = new THREE.Line( geometryPoints, new THREE.LineBasicMaterial( { color: extrudeSettings } ) );
+
+ line2.position.set(0, 10, 0);
+ line2.rotation.set(Math.PI/2, 0, 0);
+ scene.add(line2)
+
+
+
+
+    //scene.add(splineObject)
 
     //var text = new FizzyText();
     var Adbo = new AdboObject()
@@ -292,3 +334,7 @@ function App() {
 }
 
 export default App;
+
+
+
+
