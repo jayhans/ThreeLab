@@ -41,8 +41,67 @@ function App() {
     threeRef.current.appendChild(renderer.domElement);
     threeRef.current.appendChild(stats.dom);
 
+    ThreeInit(camera, scene, renderer);
 
-    ThreeInit(camera, scene, renderer)
+    // Rounded rectangle
+    var roundedRectShape = new THREE.Shape();
+    (function roundedRect(ctx, x, y, width, height, radius) {
+      ctx.moveTo(x, y + radius);
+      ctx.lineTo(x, y + height - radius);
+      ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
+      ctx.lineTo(x + width - radius, y + height);
+      ctx.quadraticCurveTo(
+        x + width,
+        y + height,
+        x + width,
+        y + height - radius
+      );
+      ctx.lineTo(x + width, y + radius);
+      ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
+      ctx.lineTo(x + radius, y);
+      ctx.quadraticCurveTo(x, y, x, y + radius);
+    })(roundedRectShape, 0, 0, 100, 10, 5);
+
+    var extrudeSettings = {
+      depth: 8,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      steps: 2,
+      bevelSize: 1,
+      bevelThickness: 1
+    };
+    //addShape( roundedRectShape, extrudeSettings, 0x008000, - 150, 150, 0, 0, 0, 0, 1 );
+
+    roundedRectShape.autoClose = true;
+    var points = roundedRectShape.getPoints();
+
+    var geometryPoints = new THREE.BufferGeometry().setFromPoints(points);
+
+    // solid line
+    var line = new THREE.Line(
+      geometryPoints,
+      new THREE.LineBasicMaterial({ color: extrudeSettings })
+    );
+    line.position.set(0, 0, 0);
+    line.rotation.set(Math.PI / 2, 0, 0);
+    line.scale.set(1, 1, 1);
+    scene.add(line);
+
+    var line2 = new THREE.Line(
+      geometryPoints,
+      new THREE.LineBasicMaterial({ color: extrudeSettings })
+    );
+
+    line2.position.set(0, 10, 0);
+    line2.rotation.set(Math.PI / 2, 0, 0);
+    scene.add(line2);
+
+
+    var slab = DrawSlabFix(100, 100, 10, 30 , 1)
+
+    scene.add(slab)
+
+
 
     RebarTest(camera, scene, renderer);
   }
@@ -103,13 +162,13 @@ function RebarTest(camera, scene, renderer) {
   //var normal = new THREE.Vector3.crossVectors(line1.Vector3, line2.Vector3)
   var points = geometry.vertices
   var v1 = new THREE.Vector3();
+  var v2 = new THREE.Vector3();
+  var v3 = new THREE.Vector3();
   var vc1 = new THREE.Vector3();
   var vc2 = new THREE.Vector3();
   var vc3 = new THREE.Vector3();
   var vc4 = new THREE.Vector3();
   var vc5 = new THREE.Vector3();
-  var v2 = new THREE.Vector3();
-  var v3 = new THREE.Vector3();
   var normal = new THREE.Vector3();
   var center = new THREE.Vector3();
   var rad
