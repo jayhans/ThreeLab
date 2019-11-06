@@ -85,7 +85,7 @@ function App() {
     line.position.set(0, 0, 0);
     line.rotation.set(Math.PI / 2, 0, 0);
     line.scale.set(1, 1, 1);
-    scene.add(line);
+    //scene.add(line);
 
     var line2 = new THREE.Line(
       geometryPoints,
@@ -94,12 +94,12 @@ function App() {
 
     line2.position.set(0, 10, 0);
     line2.rotation.set(Math.PI / 2, 0, 0);
-    scene.add(line2);
+    //scene.add(line2);
 
 
-    var slab = DrawSlabFix(100, 100, 10, 30 , 1)
+    // var slab = DrawSlabFix(100, 100, 10, 30 , 1)
 
-    scene.add(slab)
+    // scene.add(slab)
 
 
 
@@ -133,80 +133,64 @@ function RebarTest(camera, scene, renderer) {
     bevelSize: 1,
     bevelThickness: 1
   };
-
   var x = 0;
   var y = 0;
   var height = 150;
   var width = 250;
-  var dia = 16;
+  var rebarDia = 16;
   var extend = 50
+  var line = makeStirrup(height, width, extend, rebarDia, new THREE.LineBasicMaterial({ color: extrudeSettings }))
+  //var line = new THREE.Line(geometry,new THREE.LineBasicMaterial({ color: extrudeSettings }));
+  scene.add(filletPolyline(line,20,5))
+}
 
-  //console.log('testfefefe')
-
-
-  
+function makeStirrup(height, width, extend, rebarDia, material) {
   var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(x+extend,y,0))
-  geometry.vertices.push(new THREE.Vector3(x,y,0))
-  geometry.vertices.push(new THREE.Vector3(x,y+height,0))
-  geometry.vertices.push(new THREE.Vector3(x+width,y+height,0))
-  geometry.vertices.push(new THREE.Vector3(x+width,y,dia))
-  geometry.vertices.push(new THREE.Vector3(x,y,dia))
-  geometry.vertices.push(new THREE.Vector3(x,y+extend,dia))
-  var line = new THREE.Line(geometry,new THREE.LineBasicMaterial({ color: extrudeSettings }));
-  //scene.add(line)
-  
-  var newGeometry = new THREE.Geometry();
-  newGeometry.vertices.push(new THREE.Vector3(+extend,y,0))
+  geometry.vertices.push(new THREE.Vector3(extend,0,0))
+  geometry.vertices.push(new THREE.Vector3(0,0,0))
+  geometry.vertices.push(new THREE.Vector3(0,height,0))
+  geometry.vertices.push(new THREE.Vector3(width,height,0))
+  geometry.vertices.push(new THREE.Vector3(width,0,rebarDia))
+  geometry.vertices.push(new THREE.Vector3(0,0,rebarDia))
+  geometry.vertices.push(new THREE.Vector3(0,extend,rebarDia))
+  return new THREE.Line(geometry,material);
+}
 
-  //var normal = new THREE.Vector3.crossVectors(line1.Vector3, line2.Vector3)
-  var points = geometry.vertices
+function filletPolyline(line,radius,smoothness) {
+  var points = line.geometry.vertices
+  var newGeometry = new THREE.Geometry();
   var v1 = new THREE.Vector3();
   var v2 = new THREE.Vector3();
   var v3 = new THREE.Vector3();
   var vc1 = new THREE.Vector3();
   var vc2 = new THREE.Vector3();
-  var vc3 = new THREE.Vector3();
-  var vc4 = new THREE.Vector3();
-  var vc5 = new THREE.Vector3();
-  var normal = new THREE.Vector3();
   var center = new THREE.Vector3();
-  var rad
+  var ang
   var l1
-  var radius = 20
-  //console.log(points.length)
+
+  newGeometry.vertices.push(points[0])
   for (let i = 1; i < points.length -1; i++) {
     //console.log(points[i].x);
     v1.subVectors(points[i-1],points[i]).normalize();
     v2.subVectors(points[i+1],points[i]).normalize();
-    rad = Math.acos(v1.dot(v2))
-    l1 = radius/Math.sin(rad/2)
-    normal.crossVectors(v1,v2);
-    v3.addVectors(v1,v2).normalize();
-    center.addVectors(points[i],v3.clone().multiplyScalar(l1));
-  
-    var p1 = new THREE.Vector3().addVectors(points[i],v1.multiplyScalar(radius/Math.tan(rad/2)))
-    var p5 = new THREE.Vector3().addVectors(points[i],v2.multiplyScalar(radius/Math.tan(rad/2)))
-    var p3 = new THREE.Vector3().addVectors(points[i],v3.multiplyScalar(l1-radius))
-
-    vc1.subVectors(p1,center).normalize();
-    vc3.subVectors(p3,center).normalize();
-    vc5.subVectors(p5,center).normalize();
-    vc2.addVectors(vc1,vc3).normalize().multiplyScalar(radius);
-    vc4.addVectors(vc5,vc3).normalize().multiplyScalar(radius);
+    ang = Math.acos(v1.dot(v2))
+    l1 = radius/Math.sin(ang/2)
+    v3.addVectors(v1,v2).setLength(l1);
+    center.addVectors(points[i],v3);
+    var p1 = new THREE.Vector3().addVectors(points[i],v1.multiplyScalar(radius/Math.tan(ang/2)))
+    var p2 = new THREE.Vector3().addVectors(points[i],v2.multiplyScalar(radius/Math.tan(ang/2)))
+    vc1.subVectors(p1,center);
+    vc2.subVectors(p2,center);
    
-    var p2 = new THREE.Vector3().addVectors(center, vc2);
-    var p4 = new THREE.Vector3().addVectors(center, vc4);
-
     newGeometry.vertices.push(p1)
+    for (let j = 0; j < smoothness; j++)    {
+      var dirVec = new THREE.Vector3().addVectors(vc1.clone().multiplyScalar(smoothness-j),vc2.clone().multiplyScalar(j+1)).setLength(radius);
+      newGeometry.vertices.push(new THREE.Vector3().addVectors(center,dirVec));
+    }
     newGeometry.vertices.push(p2)
-    newGeometry.vertices.push(p3)
-    newGeometry.vertices.push(p4)
-    newGeometry.vertices.push(p5)
-    //console.log(p1)
-    //console.log(radius/Math.tan(rad/2));
   }
-  newGeometry.vertices.push(new THREE.Vector3(x,y+extend,dia))
-  var line2 = new THREE.Line(newGeometry,new THREE.LineBasicMaterial({ color: extrudeSettings }));
-  scene.add(line2)
+  newGeometry.vertices.push(points[points.length-1])
+  //var line2 = new THREE.Line(newGeometry,line.material);
+  //scene.add(line2)
+  return new THREE.Line(newGeometry,line.material);
 }

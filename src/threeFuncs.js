@@ -116,30 +116,30 @@ export function ThreeInit(camera, scene, renderer) {
   // scene.add(line2);
 
   ////////////////////////////////////////////////////////////
-}
+//}
 
-  var numOfLngRebar = slabY / lngSpan;
-  for (let index = 0; index < numOfLngRebar; index++) {
-    var line = new THREE.Line(geometryPoints, mat);
-    line.position.set(0, index * lngSpan, 0);
-    line.rotation.set(Math.PI / 2, 0, 0);
-    line.scale.set(1, 1, 1);
-    group.add(line);
-  }
+//   var numOfLngRebar = slabY / lngSpan;
+//   for (let index = 0; index < numOfLngRebar; index++) {
+//     var line = new THREE.Line(geometryPoints, mat);
+//     line.position.set(0, index * lngSpan, 0);
+//     line.rotation.set(Math.PI / 2, 0, 0);
+//     line.scale.set(1, 1, 1);
+//     group.add(line);
+//   }
 
-  // var line = new THREE.Line(
-  //   geometryPoints,
-  //   new THREE.LineBasicMaterial({ color: '#f2f2f2' })
-  // );
-  // line.position.set(0, 0, 0);
-  // line.rotation.set(Math.PI / 2, 0, 0);
-  // line.scale.set(1, 1, 1);
+//   // var line = new THREE.Line(
+//   //   geometryPoints,
+//   //   new THREE.LineBasicMaterial({ color: '#f2f2f2' })
+//   // );
+//   // line.position.set(0, 0, 0);
+//   // line.rotation.set(Math.PI / 2, 0, 0);
+//   // line.scale.set(1, 1, 1);
 
-  group.add(line);
-  group.rotation.set(0, 0, -Math.PI / 2);
+//   group.add(line);
+//   group.rotation.set(0, 0, -Math.PI / 2);
 
-  return group;
-}
+//   return group;
+// }
 
 function roundedRect(ctx, x, y, width, height, radius) {
   ctx.moveTo(x, y + radius);
