@@ -103,7 +103,7 @@ function App() {
 
 
 
-    RebarTest(camera, scene, renderer);
+    RebarTest(scene);
   }
 
   function animate() {
@@ -124,7 +124,7 @@ function App() {
 }
 
 export default App;
-function RebarTest(camera, scene, renderer) {
+function RebarTest(scene) {
   var extrudeSettings = {
     depth: 8,
     bevelEnabled: true,
@@ -139,9 +139,9 @@ function RebarTest(camera, scene, renderer) {
   var width = 250;
   var rebarDia = 16;
   var extend = 50
-  var line = makeStirrup(height, width, extend, rebarDia, new THREE.LineBasicMaterial({ color: extrudeSettings }))
+  //var stirrup = makeStirrup(height, width, extend, rebarDia)
   //var line = new THREE.Line(geometry,new THREE.LineBasicMaterial({ color: extrudeSettings }));
-  scene.add(filletPolyline(line,20,5))
+  scene.add(new THREE.Line(filletPolyline(makeStirrup(height, width, extend, rebarDia),20,50), new THREE.LineBasicMaterial({ color: extrudeSettings })))
 }
 
 function makeStirrup(height, width, extend, rebarDia, material) {
@@ -153,11 +153,11 @@ function makeStirrup(height, width, extend, rebarDia, material) {
   geometry.vertices.push(new THREE.Vector3(width,0,rebarDia))
   geometry.vertices.push(new THREE.Vector3(0,0,rebarDia))
   geometry.vertices.push(new THREE.Vector3(0,extend,rebarDia))
-  return new THREE.Line(geometry,material);
+  return geometry;
 }
 
-function filletPolyline(line,radius,smoothness) {
-  var points = line.geometry.vertices
+function filletPolyline(geometry,radius,smoothness) {
+  var points = geometry.vertices
   var newGeometry = new THREE.Geometry();
   var v1 = new THREE.Vector3();
   var v2 = new THREE.Vector3();
@@ -192,5 +192,5 @@ function filletPolyline(line,radius,smoothness) {
   newGeometry.vertices.push(points[points.length-1])
   //var line2 = new THREE.Line(newGeometry,line.material);
   //scene.add(line2)
-  return new THREE.Line(newGeometry,line.material);
+  return newGeometry;
 }
