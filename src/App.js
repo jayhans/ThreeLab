@@ -8,7 +8,7 @@ import OrbitControls from "three-orbitcontrols";
 import Stats from "stats.js";
 
 import { ThreeInit } from './threeFuncs'
-
+import { steelBoxMesh } from './steelBoxGirder'
 var camera, scene, renderer;
 
 var stats = new Stats();
@@ -22,11 +22,11 @@ function App() {
       70,
       window.innerWidth / window.innerHeight,
       0.01,
-      30000
+      300000
     );
-    camera.position.z = 400;
+    camera.position.z = 4000;
     // y z axis exchange
-    camera.up = new THREE.Vector3(0, 0, 1);
+    camera.up = new THREE.Vector3(0, 0, 1000);
 
     scene = new THREE.Scene();
 
@@ -95,15 +95,10 @@ function App() {
     line2.position.set(0, 10, 0);
     line2.rotation.set(Math.PI / 2, 0, 0);
     //scene.add(line2);
-
-
     // var slab = DrawSlabFix(100, 100, 10, 30 , 1)
 
     // scene.add(slab)
-
-
-
-    RebarTest(scene);
+    steelBoxMesh(scene);
   }
 
   function animate() {
@@ -124,39 +119,21 @@ function App() {
 }
 
 export default App;
-function RebarTest(scene) {
-  var extrudeSettings = {
-    depth: 8,
-    bevelEnabled: true,
-    bevelSegments: 2,
-    steps: 2,
-    bevelSize: 1,
-    bevelThickness: 1
-  };
-  var x = 0;
-  var y = 0;
-  var height = 150;
-  var width = 250;
-  var rebarDia = 16;
-  var extend = 50
-  //var stirrup = makeStirrup(height, width, extend, rebarDia)
-  //var line = new THREE.Line(geometry,new THREE.LineBasicMaterial({ color: extrudeSettings }));
-  scene.add(new THREE.Line(filletPolyline(makeStirrup(height, width, extend, rebarDia),20,50), new THREE.LineBasicMaterial({ color: extrudeSettings })))
-}
+
 
 function makeStirrup(height, width, extend, rebarDia, material) {
   var geometry = new THREE.Geometry();
-  geometry.vertices.push(new THREE.Vector3(extend,0,0))
-  geometry.vertices.push(new THREE.Vector3(0,0,0))
-  geometry.vertices.push(new THREE.Vector3(0,height,0))
-  geometry.vertices.push(new THREE.Vector3(width,height,0))
-  geometry.vertices.push(new THREE.Vector3(width,0,rebarDia))
-  geometry.vertices.push(new THREE.Vector3(0,0,rebarDia))
-  geometry.vertices.push(new THREE.Vector3(0,extend,rebarDia))
+  geometry.vertices.push(new THREE.Vector3(extend, 0, 0))
+  geometry.vertices.push(new THREE.Vector3(0, 0, 0))
+  geometry.vertices.push(new THREE.Vector3(0, height, 0))
+  geometry.vertices.push(new THREE.Vector3(width, height, 0))
+  geometry.vertices.push(new THREE.Vector3(width, 0, rebarDia))
+  geometry.vertices.push(new THREE.Vector3(0, 0, rebarDia))
+  geometry.vertices.push(new THREE.Vector3(0, extend, rebarDia))
   return geometry;
 }
 
-function filletPolyline(geometry,radius,smoothness) {
+function filletPolyline(geometry, radius, smoothness) {
   var points = geometry.vertices
   var newGeometry = new THREE.Geometry();
   var v1 = new THREE.Vector3();
@@ -169,28 +146,31 @@ function filletPolyline(geometry,radius,smoothness) {
   var l1
 
   newGeometry.vertices.push(points[0])
-  for (let i = 1; i < points.length -1; i++) {
+  for (let i = 1; i < points.length - 1; i++) {
     //console.log(points[i].x);
-    v1.subVectors(points[i-1],points[i]).normalize();
-    v2.subVectors(points[i+1],points[i]).normalize();
+    v1.subVectors(points[i - 1], points[i]).normalize();
+    v2.subVectors(points[i + 1], points[i]).normalize();
     ang = Math.acos(v1.dot(v2))
-    l1 = radius/Math.sin(ang/2)
-    v3.addVectors(v1,v2).setLength(l1);
-    center.addVectors(points[i],v3);
-    var p1 = new THREE.Vector3().addVectors(points[i],v1.multiplyScalar(radius/Math.tan(ang/2)))
-    var p2 = new THREE.Vector3().addVectors(points[i],v2.multiplyScalar(radius/Math.tan(ang/2)))
-    vc1.subVectors(p1,center);
-    vc2.subVectors(p2,center);
-   
+    l1 = radius / Math.sin(ang / 2)
+    v3.addVectors(v1, v2).setLength(l1);
+    center.addVectors(points[i], v3);
+    var p1 = new THREE.Vector3().addVectors(points[i], v1.multiplyScalar(radius / Math.tan(ang / 2)))
+    var p2 = new THREE.Vector3().addVectors(points[i], v2.multiplyScalar(radius / Math.tan(ang / 2)))
+    vc1.subVectors(p1, center);
+    vc2.subVectors(p2, center);
+
     newGeometry.vertices.push(p1)
-    for (let j = 0; j < smoothness; j++)    {
-      var dirVec = new THREE.Vector3().addVectors(vc1.clone().multiplyScalar(smoothness-j),vc2.clone().multiplyScalar(j+1)).setLength(radius);
-      newGeometry.vertices.push(new THREE.Vector3().addVectors(center,dirVec));
+    for (let j = 0; j < smoothness; j++) {
+      var dirVec = new THREE.Vector3().addVectors(vc1.clone().multiplyScalar(smoothness - j), vc2.clone().multiplyScalar(j + 1)).setLength(radius);
+      newGeometry.vertices.push(new THREE.Vector3().addVectors(center, dirVec));
     }
     newGeometry.vertices.push(p2)
   }
-  newGeometry.vertices.push(points[points.length-1])
+  newGeometry.vertices.push(points[points.length - 1])
   //var line2 = new THREE.Line(newGeometry,line.material);
   //scene.add(line2)
   return newGeometry;
 }
+
+
+

@@ -4,13 +4,13 @@ import * as THREE from "three";
 export function ThreeInit(camera, scene, renderer) {
   console.log("threeInit");
 
-  var GridHelper = new THREE.GridHelper(1000, 100);
+  var GridHelper = new THREE.GridHelper(100000, 100);
   //  y z axis exchange
   GridHelper.rotation.set(Math.PI / 2, 0, 0);
   scene.add(GridHelper);
 
-  var AxesHelper = new THREE.AxesHelper(30);
-  AxesHelper.position.set(0, 0, 0.1);
+  var AxesHelper = new THREE.AxesHelper(3000);
+  AxesHelper.position.set(0, 0, 10);
   scene.add(AxesHelper);
 
   var light = new THREE.AmbientLight(0x000000);
@@ -53,10 +53,10 @@ export function ThreeInit(camera, scene, renderer) {
 
   for (let i = 0; i < 6; i++) materialArray[i].side = THREE.BackSide;
 
-  let skyboxGeo = new THREE.BoxGeometry(10000, 10000, 10000);
+  let skyboxGeo = new THREE.BoxGeometry(100000, 100000, 100000);
   let skybox = new THREE.Mesh(skyboxGeo, materialArray);
   skybox.rotation.set(Math.PI / 2, 0, 0);
-  scene.add(skybox);
+  //scene.add(skybox);
 }
 
 
