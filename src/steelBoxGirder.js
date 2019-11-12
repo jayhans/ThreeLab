@@ -3,13 +3,15 @@ import * as THREE from "three";
 export function steelBoxMesh(scene) {
     var baseline = girderCurve()    //geometry
     var spline = new THREE.CatmullRomCurve3(baseline.vertices)
+    spline.curveType = 'catmullrom'
     var splinelength = spline.getLength()
     var startpoint = 500;
     var diaphragmDistance = 5000;
-    var sp = 5; // spacing 각 파트가 서로 중첩되지 않도록 간격 설정 0:원본값
+    
     var material =  new THREE.MeshNormalMaterial(); //new THREE.MeshLambertMaterial( { color: 0x00aa00,emissive: 0x008800, wireframe: false } );
-    var material2 =  new THREE.MeshLambertMaterial( { color: 0x00aa00,emissive: 0x00ff00, wireframe: true } );
+    var material2 =  new THREE.MeshNormalMaterial(); // new THREE.MeshLambertMaterial( { color: 0x00aa00,emissive: 0x007700, wireframe: false } );
     //control variables-start
+    var sp = 200; // spacing 각 파트가 서로 중첩되지 않도록 간격 설정 0:원본값 , Max = H/10
     var B = 1800; // 하단 웹간격
     var H = 2500; // 웹높이
     var ULR = 1300; // 상단 웹간격/2
@@ -57,7 +59,7 @@ export function steelBoxMesh(scene) {
       newdia.rotateOnWorldAxis(new THREE.Vector3(0,0,1),rad);
       var point = spline.getPoint(i/splinelength)
       newdia.position.set(point.x, point.y, point.z)
-      scene.add(newdia)
+      scene.add(newdia);
     }
     vstiff.rotation.set(Math.PI/2,0,0);
     //// vstiffner layout function
@@ -70,9 +72,13 @@ export function steelBoxMesh(scene) {
       newvstiff.position.set(point.x, point.y, point.z)
       scene.add(newvstiff)
     }
-    scene.add(hstiff(spline,material,sp,B,H,ULR,upperHeight,VsideHeight,sideTopThickness,sideToplength,sideTopwidth))
-    scene.add(boxShapes(material2,spline,sp,B,H,ULR,C,C1,upperflangeThickness,webThickness,lowerflangeThickness,longiRibHeight,longiRibThickness,longiRibRayout))
-    scene.add(new THREE.Line(baseline, new THREE.LineBasicMaterial({ color: 0xff0000 })))
+    var hs = hstiff(spline,material,sp,B,H,ULR,upperHeight,VsideHeight,sideTopThickness,sideToplength,sideTopwidth)
+    scene.add(hs)
+    
+    var boxsh = boxShapes(material2,spline,sp,B,H,ULR,C,C1,upperflangeThickness,webThickness,lowerflangeThickness,longiRibHeight,longiRibThickness,longiRibRayout)
+    scene.add(boxsh)
+    
+    //scene.add(new THREE.Line(baseline, new THREE.LineBasicMaterial({ color: 0xff0000 })))
   }
 
   function girderCurve() {
@@ -148,7 +154,7 @@ export function steelBoxMesh(scene) {
       ];
       shapes.push(new THREE.Shape(Rib));
     }
-    var boxgeometry = new THREE.ExtrudeBufferGeometry(shapes, {steps: 100, bevelEnabled: false, extrudePath: spline} );
+    var boxgeometry = new THREE.ExtrudeBufferGeometry(shapes, {steps: 200, bevelEnabled: false, extrudePath: spline} );
     var boxmesh = new THREE.Mesh( boxgeometry, material );
     
     return boxmesh
@@ -196,20 +202,20 @@ export function steelBoxMesh(scene) {
 
   ///lower stiffener
     var plate = [];
-    var lowerHeight2 = lowerHeight - sp;
-    plate.push(new THREE.Vector2(-B/2 -lowerHeight2/H * (ULR - B/2),-H + lowerHeight2));
+    //var lowerHeight2 = lowerHeight - sp;
+    plate.push(new THREE.Vector2(-B/2 -lowerHeight/H * (ULR - B/2),-H + lowerHeight));
     plate.push(new THREE.Vector2(-B/2,-H));
     plate.push(new THREE.Vector2(B/2,-H));
-    plate.push(new THREE.Vector2(B/2 + lowerHeight2/H * (ULR - B/2),-H + lowerHeight2));
+    plate.push(new THREE.Vector2(B/2 + lowerHeight/H * (ULR - B/2),-H + lowerHeight));
     var points = [];
     points.push(plate[0]);
     points = points.concat(scallop(plate[0],plate[1],plate[2],35,4));
     //// longitudinal stiffner holes
     for (let i=0; i<longiRibRayout.length;i++){
-      points.push(new THREE.Vector2( longiRibRayout[i] - 42,-H));
-      var curve = new THREE.ArcCurve(longiRibRayout[i],-H + longiRibHeight,25,Math.PI,0,true);
+      points.push(new THREE.Vector2( longiRibRayout[i] - 42,plate[1].y));
+      var curve = new THREE.ArcCurve(longiRibRayout[i],plate[1].y + longiRibHeight,25,Math.PI,0,true);
       points = points.concat(curve.getPoints(8));
-      points.push(new THREE.Vector2( longiRibRayout[i] + 42,-H));
+      points.push(new THREE.Vector2( longiRibRayout[i] + 42,plate[1].y));
     }
     ////
     points = points.concat(scallop(plate[1],plate[2],plate[3],35,4));
@@ -233,12 +239,11 @@ export function steelBoxMesh(scene) {
   //var lowerTopMesh2 = new THREE.Mesh(lowerTopGeometry2,material2);
   ////
   ///upper stiffener
-  var upperHeight2 = upperHeight - sp
   var plate2 = [];
-  plate2.push(new THREE.Vector2(-ULR,0));
-  plate2.push(new THREE.Vector2(-ULR + upperHeight2/H * (ULR - B/2),-upperHeight2));
-  plate2.push(new THREE.Vector2(ULR - upperHeight2/H * (ULR - B/2),-upperHeight2));
-  plate2.push(new THREE.Vector2(ULR,0));
+  plate2.push(new THREE.Vector2(-ULR,sp));
+  plate2.push(new THREE.Vector2(-ULR + upperHeight/H * (ULR - B/2),-upperHeight+sp));
+  plate2.push(new THREE.Vector2(ULR - upperHeight/H * (ULR - B/2),-upperHeight+sp));
+  plate2.push(new THREE.Vector2(ULR,sp));
   var points2 = [];
   points2 = points2.concat(scallop(plate2[3],plate2[0],plate2[1],35,4));
   points2.push(plate2[1]);

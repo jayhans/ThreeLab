@@ -21,10 +21,10 @@ function App() {
     camera = new THREE.PerspectiveCamera(
       70,
       window.innerWidth / window.innerHeight,
-      0.01,
+      1,
       300000
     );
-    camera.position.z = 4000;
+    camera.position.z = 5000;
     // y z axis exchange
     camera.up = new THREE.Vector3(0, 0, 1000);
 
