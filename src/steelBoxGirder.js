@@ -1,8 +1,5 @@
 import "./App.css";
-
 import * as THREE from "three";
-
-
 export function steelBoxMesh(scene) {
     var baseline = girderCurve()    //geometry
     var spline = new THREE.CatmullRomCurve3(baseline.vertices)
@@ -13,7 +10,7 @@ export function steelBoxMesh(scene) {
     var material =  new THREE.MeshNormalMaterial(); //new THREE.MeshLambertMaterial( { color: 0x00aa00,emissive: 0x008800, wireframe: false } );
     var material2 =  new THREE.MeshLambertMaterial( { color: 0x00aa00,emissive: 0x00ff00, wireframe: true } );
     //control variables-start
-    var B = 2000; // 하단 웹간격
+    var B = 1800; // 하단 웹간격
     var H = 2500; // 웹높이
     var ULR = 1300; // 상단 웹간격/2
     var C = 100; // 하단플렌지돌출길이
@@ -48,7 +45,7 @@ export function steelBoxMesh(scene) {
     var sideToplength = 700;
     var sideTopwidth = 300;
 
-    var dia = diaphragm(material,sp,B, H, ULR, lowerHeight,lowerThickness,lowerTopThickness,lowerTopwidth,upperThickness,longiRibHeight,longiRibRayout,
+    var dia = diaphragm(material,sp,B, H, ULR, C1, lowerHeight,lowerThickness,lowerTopThickness,lowerTopwidth,upperThickness,longiRibHeight,longiRibRayout,
         upperHeight,sideHeight,sideThickness,leftsideTopwidth,leftsideTopThickness,leftsideToplength,rightsideTopwidth,rightsideTopThickness,rightsideToplength);
     var vstiff = vstiffner(material,sp,B,H,ULR,VsideHeight,VsideThickness,upperHeight,bottomOffset);
 
@@ -158,7 +155,7 @@ export function steelBoxMesh(scene) {
   }
   
   
-  function diaphragm(material, sp, B, H, ULR, lowerHeight,lowerThickness,lowerTopThickness,lowerTopwidth,upperThickness,longiRibHeight,longiRibRayout,
+  function diaphragm(material, sp, B, H, ULR, C1, lowerHeight,lowerThickness,lowerTopThickness,lowerTopwidth,upperThickness,longiRibHeight,longiRibRayout,
     upperHeight,sideHeight,sideThickness,leftsideTopwidth,leftsideTopThickness,leftsideToplength,rightsideTopwidth,rightsideTopThickness,rightsideToplength){
   
     // var B = 2000;
@@ -182,6 +179,8 @@ export function steelBoxMesh(scene) {
     // var rightsideTopwidth = 220;
     // var rightsideTopThickness = 12;
     // var rightsideToplength = 80;
+    var upperTopThickness = 10;
+    var upperTopwidth = 150;
   
     var cosine = H/Math.sqrt(Math.pow(H,2) + Math.pow((ULR - B/2),2));
     var lower = new THREE.Shape();
@@ -252,6 +251,20 @@ export function steelBoxMesh(scene) {
   upperMesh.translateZ(-upperThickness/2);
   //var upperMesh2 = new THREE.Mesh(upperGeometry2,material);
   
+  //upperTopPlate
+  var upperTop = [
+    new THREE.Vector2(-ULR + C1, sp),
+    new THREE.Vector2(ULR - C1, sp),
+    new THREE.Vector2(ULR - C1, upperTopThickness + sp),
+    new THREE.Vector2(-ULR + C1, upperTopThickness + sp)
+  ];
+  var upperTopShape = new THREE.Shape(upperTop);
+  var upperTopGeometry = new THREE.ExtrudeBufferGeometry(upperTopShape, {steps: 1, bevelEnabled: false, depth: upperTopwidth});
+  var upperTopMesh = new THREE.Mesh(upperTopGeometry,material);
+  upperTopMesh.translateZ(-upperTopwidth/2);
+
+
+
   ////left side stiffner
   var lowerTopThickness2 = lowerTopThickness + sp
   var leftsideTopThickness2 = leftsideTopThickness + sp
@@ -339,6 +352,7 @@ export function steelBoxMesh(scene) {
   group.add(lowerTopMesh);
   //group.add(lowerTopMesh2);
   group.add(upperMesh);
+  group.add(upperTopMesh);
   //group.add(upperMesh2);
   group.add(leftplateMesh);
   //group.add(leftplateMesh2);
