@@ -1,12 +1,8 @@
 import React, { useEffect, useRef } from "react";
-
 import "./App.css";
-
 import * as THREE from "three";
 import OrbitControls from "three-orbitcontrols";
-
 import Stats from "stats.js";
-
 import { ThreeInit } from './threeFuncs'
 import { steelBoxMesh } from './steelBoxGirder'
 var camera, scene, renderer;
