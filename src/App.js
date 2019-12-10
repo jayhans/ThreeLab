@@ -5,6 +5,7 @@ import OrbitControls from "three-orbitcontrols";
 import Stats from "stats.js";
 import { ThreeInit } from './threeFuncs'
 import { steelBoxMesh } from './steelBoxGirder'
+import { Main } from './nodeGenerator'
 var camera, scene, renderer;
 
 var stats = new Stats();
@@ -39,24 +40,24 @@ function App() {
 
     ThreeInit(camera, scene, renderer);
 
-    // Rounded rectangle
-    var roundedRectShape = new THREE.Shape();
-    (function roundedRect(ctx, x, y, width, height, radius) {
-      ctx.moveTo(x, y + radius);
-      ctx.lineTo(x, y + height - radius);
-      ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
-      ctx.lineTo(x + width - radius, y + height);
-      ctx.quadraticCurveTo(
-        x + width,
-        y + height,
-        x + width,
-        y + height - radius
-      );
-      ctx.lineTo(x + width, y + radius);
-      ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
-      ctx.lineTo(x + radius, y);
-      ctx.quadraticCurveTo(x, y, x, y + radius);
-    })(roundedRectShape, 0, 0, 100, 10, 5);
+    // // Rounded rectangle
+    // var roundedRectShape = new THREE.Shape();
+    // (function roundedRect(ctx, x, y, width, height, radius) {
+    //   ctx.moveTo(x, y + radius);
+    //   ctx.lineTo(x, y + height - radius);
+    //   ctx.quadraticCurveTo(x, y + height, x + radius, y + height);
+    //   ctx.lineTo(x + width - radius, y + height);
+    //   ctx.quadraticCurveTo(
+    //     x + width,
+    //     y + height,
+    //     x + width,
+    //     y + height - radius
+    //   );
+    //   ctx.lineTo(x + width, y + radius);
+    //   ctx.quadraticCurveTo(x + width, y, x + width - radius, y);
+    //   ctx.lineTo(x + radius, y);
+    //   ctx.quadraticCurveTo(x, y, x, y + radius);
+    // })(roundedRectShape, 0, 0, 100, 10, 5);
 
     var extrudeSettings = {
       depth: 8,
@@ -66,35 +67,52 @@ function App() {
       bevelSize: 1,
       bevelThickness: 1
     };
-    //addShape( roundedRectShape, extrudeSettings, 0x008000, - 150, 150, 0, 0, 0, 0, 1 );
+    // //addShape( roundedRectShape, extrudeSettings, 0x008000, - 150, 150, 0, 0, 0, 0, 1 );
 
-    roundedRectShape.autoClose = true;
-    var points = roundedRectShape.getPoints();
+    // roundedRectShape.autoClose = true;
+    // var points = roundedRectShape.getPoints();
 
-    var geometryPoints = new THREE.BufferGeometry().setFromPoints(points);
+    // var geometryPoints = new THREE.BufferGeometry().setFromPoints(points);
+    // scene.add(line);
+    // // var slab = DrawSlabFix(100, 100, 10, 30 , 1)
+    // scene.add(slab)
+    //steelBoxMesh(scene);
+    let linedata = Main();
+
+    console.log(linedata)
 
     // solid line
+    var geometry = new THREE.Geometry();
+    const xInit = linedata[0][0].x
+    const yInit = linedata[0][0].y
+    const zInit = linedata[0][0].z
+    for (let i = 0; i<linedata[0].length;i++){
+      geometry.vertices.push( new THREE.Vector3	(linedata[0][i].x - xInit,	linedata[0][i].y - yInit,	linedata[0][i].z - zInit));
+    }
     var line = new THREE.Line(
-      geometryPoints,
-      new THREE.LineBasicMaterial({ color: extrudeSettings })
+      geometry, new THREE.LineBasicMaterial({ color: extrudeSettings })
     );
-    line.position.set(0, 0, 0);
-    line.rotation.set(Math.PI / 2, 0, 0);
-    line.scale.set(1, 1, 1);
-    //scene.add(line);
+    scene.add(line);
 
+    var geometry2 = new THREE.Geometry();
+    const xInit2 = linedata[1][0].x
+    const yInit2 = linedata[1][0].y
+    const zInit2 = linedata[1][0].z
+    for (let i = 0; i<linedata[1].length;i++){
+      geometry2.vertices.push( new THREE.Vector3	(linedata[1][i].x - xInit,	linedata[1][i].y - yInit,	linedata[1][i].z - zInit));
+    }
     var line2 = new THREE.Line(
-      geometryPoints,
-      new THREE.LineBasicMaterial({ color: extrudeSettings })
+      geometry2, new THREE.LineBasicMaterial({ color: extrudeSettings })
     );
+    //console.log(geometry2)
+    scene.add(line2);
+  for (let i = 31; i<linedata[1].length;i++){
+    var newgeometry = new THREE.Geometry();
+    newgeometry.vertices.push(new THREE.Vector3	(linedata[0][i].x - xInit,	linedata[0][i].y - yInit,	linedata[0][i].z - zInit));
+    newgeometry.vertices.push(new THREE.Vector3	(linedata[1][i].x - xInit,	linedata[1][i].y - yInit,	linedata[1][i].z - zInit));
+    scene.add(new THREE.Line(newgeometry, new THREE.LineBasicMaterial({ color: extrudeSettings })));
+  }
 
-    line2.position.set(0, 10, 0);
-    line2.rotation.set(Math.PI / 2, 0, 0);
-    //scene.add(line2);
-    // var slab = DrawSlabFix(100, 100, 10, 30 , 1)
-
-    // scene.add(slab)
-    steelBoxMesh(scene);
   }
 
   function animate() {

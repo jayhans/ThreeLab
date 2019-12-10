@@ -2,7 +2,7 @@ import * as THREE from "three";
 //import { CSG } from "@hi-level/three-csg";
 
 export function ThreeInit(camera, scene, renderer) {
-  console.log("threeInit");
+  //console.log("threeInit");
 
   var GridHelper = new THREE.GridHelper(100000, 100);
   //  y z axis exchange
