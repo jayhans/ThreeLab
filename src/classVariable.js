@@ -81,7 +81,6 @@ export function Curve(startPoint, vector1, vector2, radius, a1, a2) {
             let slopeDeltaY = l ** 2 / 6 / aEnd ** 2 * (3 - l ** 4 * 7 / 56 / aEnd ** 4 + l ** 8 * 11 / 7040 / aEnd ** 8)
             let slopeLength = Math.sqrt(slopeDeltaX ** 2 + slopeDeltaY ** 2)
             let normalCos = -sign * slopeDeltaY / slopeLength
-            console.log(sign)
             let normalSin = slopeDeltaX / slopeLength
             let globalNormalCos = vector2.cos * normalCos - vector2.sin * normalSin
             let globalNormalSin = vector2.sin * normalCos + vector2.cos * normalSin

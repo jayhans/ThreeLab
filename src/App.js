@@ -5,7 +5,7 @@ import OrbitControls from "three-orbitcontrols";
 import Stats from "stats.js";
 import { ThreeInit } from './threeFuncs'
 import { steelBoxMesh } from './steelBoxGirder'
-import { Main } from './nodeGenerator'
+import {Main, PointGenerator, LineMatch} from './nodeGenerator'
 var camera, scene, renderer;
 
 var stats = new Stats();
@@ -83,36 +83,63 @@ function App() {
 
     // solid line
     var geometry = new THREE.Geometry();
-    const xInit = linedata[0][0].x
-    const yInit = linedata[0][0].y
-    const zInit = linedata[0][0].z
-    for (let i = 0; i<linedata[0].length;i++){
-      geometry.vertices.push( new THREE.Vector3	(linedata[0][i].x - xInit,	linedata[0][i].y - yInit,	linedata[0][i].z - zInit));
+    const xInit = linedata.p[0][0].x
+    const yInit = linedata.p[0][0].y
+    const zInit = linedata.p[0][0].z
+    for (let i = 0; i<linedata.p[0].length;i++){
+      geometry.vertices.push( new THREE.Vector3	(linedata.p[0][i].x - xInit,	linedata.p[0][i].y - yInit,	linedata.p[0][i].z - zInit));
     }
     var line = new THREE.Line(
       geometry, new THREE.LineBasicMaterial({ color: extrudeSettings })
     );
     scene.add(line);
-
     var geometry2 = new THREE.Geometry();
-    const xInit2 = linedata[1][0].x
-    const yInit2 = linedata[1][0].y
-    const zInit2 = linedata[1][0].z
-    for (let i = 0; i<linedata[1].length;i++){
-      geometry2.vertices.push( new THREE.Vector3	(linedata[1][i].x - xInit,	linedata[1][i].y - yInit,	linedata[1][i].z - zInit));
+    for (let i = 0; i<linedata.p[1].length;i++){
+      geometry2.vertices.push( new THREE.Vector3	(linedata.p[1][i].x - xInit,	linedata.p[1][i].y - yInit,	linedata.p[1][i].z - zInit));
     }
     var line2 = new THREE.Line(
       geometry2, new THREE.LineBasicMaterial({ color: extrudeSettings })
     );
     //console.log(geometry2)
-    scene.add(line2);
-  for (let i = 31; i<linedata[1].length;i++){
-    var newgeometry = new THREE.Geometry();
-    newgeometry.vertices.push(new THREE.Vector3	(linedata[0][i].x - xInit,	linedata[0][i].y - yInit,	linedata[0][i].z - zInit));
-    newgeometry.vertices.push(new THREE.Vector3	(linedata[1][i].x - xInit,	linedata[1][i].y - yInit,	linedata[1][i].z - zInit));
-    scene.add(new THREE.Line(newgeometry, new THREE.LineBasicMaterial({ color: extrudeSettings })));
-  }
+    //scene.add(line2);
 
+  //   let pts = linedata.girderLayout.centralSupportPoint;
+  //   for (let i = 0; i<pts.length-1;i++){
+  //   var newgeometry = new THREE.Geometry();
+  //   newgeometry.vertices.push(new THREE.Vector3	(pts[i].x - xInit,	pts[i].y - yInit,	pts[i].z - zInit));
+  //   newgeometry.vertices.push(new THREE.Vector3	(pts[i+1].x - xInit,	pts[i+1].y - yInit,	pts[i+1].z - zInit));
+  //   scene.add(new THREE.Line(newgeometry, new THREE.LineBasicMaterial({ color: extrudeSettings })));
+  // }
+  let girdersupport = linedata.girderLayout.girderSupportPoint
+  let girderSpan = linedata.girderLayout.girderSpanPoint
+
+  for (let j = 0; j<girdersupport.length;j++){
+    for (let i=1; i<girdersupport[j].length-2;i++){
+      for (let k=0;k<girderSpan[j][i-1].length + 1;k++){
+        let spts = {}
+        let epts = {}
+        if (k === 0){
+          spts = {...girdersupport[j][i]}
+          epts = {...girderSpan[j][i-1][k]}
+        }else if (k === girderSpan[j][i-1].length){
+          spts = {...girderSpan[j][i-1][k-1]}
+          epts = {...girdersupport[j][i+1]}
+          console.log(epts)
+        }else{
+          spts = {...girderSpan[j][i-1][k -1]}
+          epts = {...girderSpan[j][i-1][k]}
+        }
+        var newgeometry = new THREE.Geometry();
+        newgeometry.vertices.push(new THREE.Vector3	(spts.x - xInit,	spts.y - yInit,	spts.z - zInit));
+        newgeometry.vertices.push(new THREE.Vector3	(epts.x - xInit,	epts.y - yInit,	epts.z - zInit));
+        scene.add(new THREE.Line(newgeometry, new THREE.LineBasicMaterial({ color: extrudeSettings })));
+      }
+    }
+  }
+  // var newgeometry = new THREE.Geometry();
+  // newgeometry.vertices.push(new THREE.Vector3	(linedata.mp.x - xInit,	linedata.mp.y - yInit,	linedata.mp.z - zInit));
+  // newgeometry.vertices.push(new THREE.Vector3	(linedata.sp.x - xInit,	linedata.sp.y - yInit,	linedata.sp.z - zInit));
+  // scene.add(new THREE.Line(newgeometry, new THREE.LineBasicMaterial({ color: extrudeSettings })));
   }
 
   function animate() {

@@ -1,5 +1,6 @@
 import React from "react";
 import { Vector2d, Curve } from "./classVariable";
+import {GirderLayoutGenerator} from "./uiFuntion";
 // import {Vector2d, Curve, LineSegment} from "./Class_variable";
 import _ from "lodash";
 import { stringLiteral } from "@babel/types";
@@ -18,6 +19,7 @@ const LineGenerator = inputs => {
     input: { ...inputs },
     points : []
   };
+  const spacing = 10;
 
   for (let i = 0; i < lineResult.input.horizonDataList.length - 1; i++) {
     lineResult.startPoint.push(_.take(lineResult.input.horizonDataList[i], 2));
@@ -69,13 +71,13 @@ const LineGenerator = inputs => {
   lineResult.beginStationNumber = lineResult.segments.start[0];
   lineResult.endStationNumber = lineResult.segments.end[lineResult.segments.end.length - 1];
 
-  for (let i = Math.ceil(lineResult.beginStationNumber / 10) * 10; i < lineResult.endStationNumber; i += 10) {
+  for (let i = Math.ceil(lineResult.beginStationNumber / spacing) * spacing; i < lineResult.endStationNumber; i += spacing) {
     lineResult.points.push(PointGenerator(i, lineResult));
   }
   return lineResult;
 };
 
-const OffsetLine = (offset, line) => {
+export const OffsetLine = (offset, line) => {
 let lineResult = {
     vectors: line.vectors,
     curves: line.curves,
@@ -92,18 +94,16 @@ let lineResult = {
 //   let points = [];
   for (let i = 0; i<line.points.length;i++){
     let resultPoint = {
-        stationNumber:0,
-        x: 0,
-        y: 0,
+        stationNumber:line.points[i].stationNumber,
+        x: line.points[i].x  + line.points[i].normalCos * offset,
+        y: line.points[i].y  + line.points[i].normalSin * offset,
         z: 0,
-        normalCos: 0,
-        normalSin: 0,
-        masterStationNumber: 0,
-        masterOffset: 0,
+        normalCos: line.points[i].normalCos,
+        normalSin: line.points[i].normalSin,
+        masterStationNumber: line.points[i].stationNumber,
+        masterOffset: offset,
         virtual: false
         };
-    resultPoint.x = line.points[i].x  + line.points[i].normalCos * offset
-    resultPoint.y = line.points[i].y  + line.points[i].normalSin * offset
     lineResult.points.push(resultPoint)
     //console.log(lineResult.points[i].x, line.points[i].x, line.points[i].normalCos * offset)
   }
@@ -114,7 +114,7 @@ let lineResult = {
   return lineResult
 }
 
-const LineMatch = (masterPoint, slaveLine, skew) => {
+export const LineMatch = (masterPoint, masterLine, slaveLine, skew) => {
   let resultPoint = {
     stationNumber : 0,
     x: 0,
@@ -139,6 +139,7 @@ const LineMatch = (masterPoint, slaveLine, skew) => {
   // console.log(gamma);
   let dummy1 = 0;
   let dummy2 = 0;
+  let sign = 1;
   for (let i = 0; i<slaveLine.points.length -1;i++){
     dummy1 = alpha * slaveLine.points[i].x + beta * slaveLine.points[i].y + gamma;
     dummy2 = alpha * slaveLine.points[i+1].x + beta * slaveLine.points[i+1].y + gamma;
@@ -152,8 +153,40 @@ const LineMatch = (masterPoint, slaveLine, skew) => {
       break;
     }
     else if (dummy1*dummy2 < 0){
-      resultPoint.x = (slaveLine.points[i].x + slaveLine.points[i+1].x)/2
-      resultPoint.y = (slaveLine.points[i].y + slaveLine.points[i+1].y)/2
+      let coe = splineCoefficient(slaveLine.points[i],slaveLine.points[i+1]);
+      let a = alpha * coe.a2 + beta * coe.a1;
+      let b = alpha * coe.b2 + beta * coe.b1;
+      let c = alpha * coe.c2 + beta * coe.c1 + gamma;
+      let t = 0;
+      if (a == 0){
+          t = -c/b;
+      }else{
+        t = (-b + Math.sqrt(b**2 - 4*a*c))/(2*a);
+        if (t>1 && t<-1){
+            t = (-b - Math.sqrt(b**2 - 4*a*c))/(2*a);
+        };
+      }
+      
+      let deltaX = 2* coe.a2 * (t) + coe.b2;
+      let deltaY = 2* coe.a1 * (t) + coe.b1;
+      let len = Math.sqrt(deltaX**2 + deltaY**2);
+      resultPoint.normalCos = - deltaY/len;
+      resultPoint.normalSin = deltaX/len;
+      resultPoint.x = coe.a2 * (t**2) + coe.b2* t + coe.c2;
+      resultPoint.y = coe.a1 * (t**2) + coe.b1* t + coe.c1;
+    //   let segLen = splineLength(slaveLine.points[i],slaveLine.points[i+1]);
+    //   let resultLen = splineLength(slaveLine.points[i],resultPoint);
+    //   resultPoint.stationNumber = slaveLine.points[i].stationNumber + (slaveLine.points[i+1].stationNumber - slaveLine.points[i].stationNumber) * resultLen/segLen;
+      let MasterPoint = PointLineMatch(resultPoint,masterLine)
+      resultPoint.masterStationNumber = MasterPoint.masterStationNumber.toFixed(4)*1
+      resultPoint.stationNumber = resultPoint.masterStationNumber
+      if (MasterPoint.normalCos * (resultPoint.x - MasterPoint.x) + MasterPoint.normalSin * (resultPoint.y - MasterPoint.y) >= 0) {
+        sign = 1
+      }
+      else {
+        sign = -1
+      }
+      resultPoint.masterOffset = sign * Math.sqrt((resultPoint.x-MasterPoint.x)**2 + (resultPoint.y-MasterPoint.y)**2).toFixed(4)*1;
       break;
     }
   }
@@ -161,7 +194,7 @@ const LineMatch = (masterPoint, slaveLine, skew) => {
 }
 
 
-const PointGenerator = (stationNumber, line) => {
+export const PointGenerator = (stationNumber, line) => {
   let resultPoint = {
     stationNumber,
     x: 0,
@@ -279,7 +312,7 @@ const splineCoefficient = (point1, point2) =>{
  return {a1:a1,b1:b1,c1:c1,a2:a2,b2:b2,c2:c2}
 }
 
-const splineLength =(point1, point2) =>{
+export const splineLength =(point1, point2) =>{
     const coe = splineCoefficient(point1,point2)
     const w1 = 5/9
     const w2 = 8/9
@@ -294,79 +327,58 @@ const splineLength =(point1, point2) =>{
     return length.toFixed(4)*1
 }
 
-// function SupportSkewPointGenerator(supportPoint, masterLine, girder, supportDatalist) {
+export const PointLineMatch = (targetPoint, masterLine) =>{
+    let resultPoint = {};
+    let point1 = {};
+    let point2 = {};
+    let crossproduct1 = 0;
+    let crossproduct2 = 0;
+    let innerproduct = 1;
+    let station1 = 0;
+    let station2 = 0;
+    let station3 = 0;
+    const err = 0.0001;
+    let num_iter = 0;
+    let a = true;
 
-//   let resultPoint = []
-//   for (let i = 0; i < supportPoint.length; i++) {
-//     let point = {
-//       x: 0,
-//       y: 0,
-//       z: 0,
-//       normalCos: 0,
-//       normalSin: 0,
-//       stationNumber: 0,
-//       masterStationNumber: 0,
-//       masterOffset: 0,
-//       virtual: 0,
-//       curvature: 0,
-//       slope: 0
-//     }
+    //matser_segment = variables.Segment_station_number(master_line_datalist)
 
-//     let originPoint = { ...point }
-//     let dummyPoint = { ...point }
-//     let dummyMaster = { ...point }
-//     let girderDistance = 0
-//     let sign = 1
+    for (let i = 0; i< masterLine.segments.start.length;i++){
+        station1 = masterLine.segments.start[i];
+        station2 = masterLine.segments.end[i];
+        point1 = PointGenerator(station1, masterLine)
+        point2 = PointGenerator(station2, masterLine)
+        crossproduct1 = (targetPoint.x - point1.x) * point1.normalSin - (targetPoint.y - point1.y) * point1.normalCos
+        crossproduct2 = (targetPoint.x - point2.x) * point2.normalSin - (targetPoint.y - point2.y) * point2.normalCos
 
-//     let skew = supportDatalist[i].angle
-//     if (skew !== 0) {
-//       originPoint = supportPoint[i]
-//       girderDistance = girder.alignOffset  // 단위확인, 현재: mm
-//       if (
-//         girder.baseLine.slaveOrMaster == true &&
-//         girderDistance == 0
-//       ) {
-//         dummyPoint = originPoint
-//       }
-//       else {
-//         dummyPoint = lineMatch(originPoint, girder.baseLine, skew, girderDistance)
-//       }
-
-//       if (
-//         girder.baseLine.slaveOrMaster == true &&
-//         girderDistance == 0
-//       ) {
-//         dummyPoint.masterStationNumber = originPoint.stationNumber
-//         dummyPoint.masterOffset = girderDistance
-//       }
-//       else {
-//         dummyMaster = pointLineMatch(dummyPoint, masterLine)
-//         dummyPoint.masterStationNumber = dummyMaster.stationNumber
-
-//         if (dummyMaster.normalCos * (dummyPoint.x - dummyMaster.x) + dummyMaster.normalSin * (dummyPoint.y - dummyMaster.y) >= 0) {
-//           sign = 1
-//         }
-//         else {
-//           sign = -1
-//         }
-
-//         dummyPoint.masterOffset = sign * Math.sqrt((dummyPoint.x - dummyMaster.x)**2 + (dummyPoint.y - dummyMaster.y)**2)
-//       }
-
-//       dummyPoint.masterStationNumber = dummyPoint.masterStationNumber
-//       resultPoint.push(dummyPoint)
-//     }
-
-//     else {
-//       console.log('Skew value is not available')
-//       resultPoint = null
-//       break
-//     }
-//   }
-
-//   return resultPoint
-// }
-
+        if (crossproduct1 * crossproduct2 < 0){
+            a = false;
+            break;
+        }else if (Math.abs(crossproduct1) < err){
+            resultPoint = {...point1};
+            break;
+        } else if (Math.abs(crossproduct2) < err){
+            resultPoint = {...point2};
+            break;
+        }
+    }
+    if (a == false){
+        while (Math.abs(innerproduct) > err){
+            innerproduct = (targetPoint.x - point1.x) * (-point1.normalSin) + (targetPoint.y - point1.y) * (point1.normalCos)
+            station3 = station1 + innerproduct
+            point1 = PointGenerator(station3, masterLine)
+            station1 = point1.stationNumber
+            crossproduct1 = (targetPoint.x - point1.x) * point1.normalSin - (targetPoint.y - point1.y) * point1.normalCos
+            resultPoint = {...point1}
+            num_iter += 1
+            if (num_iter == 200){
+                break;
+            }
+        }
+    };
+    //targetPoint.master_station_number = result.station_number
+    return resultPoint
+ };
 
 // ---------------------- Test ----------------------------------
 export function Main() {
@@ -385,61 +397,41 @@ export function Main() {
     },
     supportData: [
         { name: "시점", angle: 90, spanlength: 0 },
-        { name: "A1", angle: 90, spanLength: 0 },
-        { name: "P1", angle: 90, spanLength: 55.15 },
+        { name: "A1", angle: 90, spanLength: 0.7 },
+        { name: "P1", angle: 90, spanLength: 55 },
         { name: "P2", angle: 90, spanLength: 55 },
         { name: "P3", angle: 90, spanLength: 60 },
         { name: "P4", angle: 90, spanLength: 60 },
         { name: "P5", angle: 90, spanLength: 55 },
-        { name: "A2", angle: 89.7708167291586, spanLength: 55.25 },
-        { name: "종점", angle: 90, spanLength: 0 }
+        { name: "A2", angle: 89.7708167291586, spanLength: 55 },
+        { name: "종점", angle: 90, spanLength: 0.8 }
     ],
     SEShape: {
         start: {
-            A: 150, B: 300, C: 150, D: 50, E: 500,
-            F: 2000, G: 1000, J: 470, S: 270, Taper: "parallel"
+            A: 0.150, B: 0.300, C: 0.150, D: 0.50, E: 0.500,
+            F: 2.000, G: 1.000, J: 0.470, S: 0.270, Taper: "parallel"
         },
         end: {
-            A: 250, B: 300, C: 250, D: 50, E: 500,
-            F: 2000, G: 1000, J: 470, S: 270, Taper: "parallel"
+            A: 0.250, B: 0.300, C: 0.250, D: 0.50, E: 0.500,
+            F: 2.000, G: 1.000, J: 0.470, S: 0.270, Taper: "parallel"
         }
     },
-    getGirderList: {
-        leftBeam: {
-            alignment: {baseAlign: 'align1', alignOffset: -2900}
-        },
-        girder1: {
-            alignment: {baseAlign: 'align1', alignOffset: 100}
-        },
-        rightBeam: {
-            alignment: {baseAlign: 'align1', alignOffset: 3110}
-        }
-    }
-}
+    getGirderList: [ {baseAlign: 'align1', alignOffset: -2.9000, isBeam:true},
+        {baseAlign: 'align1', alignOffset: 0.1000, isBeam:false},
+        {baseAlign: 'align1', alignOffset: 3.110, isBeam:true}
+    ]};
 
-
-
-
-  let line = LineGenerator(input);
-  let line2 = OffsetLine(20,line)
+    let line = LineGenerator(input);
+    let line2 = OffsetLine(20,line)
+    let hline = [];
+    hline.push(line);
+    let girderLayout = GirderLayoutGenerator(girderLayoutInput,hline)
+    console.log(girderLayout)
 
   let MasterPoint = PointGenerator(1208.15,line);
-  let pt = LineMatch(MasterPoint, line2, 70)
-  //console.log(line.points)
-  //console.log(line2.points)
-  //console.log(pt)
-    for (let i = 0;i<line.points.length -1;i++){
-        console.log(splineLength(line.points[i],line.points[i+1]));
-    //    let coe = splineCoefficient(line.points[32],line.points[33]);
-    //    console.log(coe)
-    }
+  let pt = LineMatch(MasterPoint,line, line2, 70)
 
-    // for (let i = 0;i<line.points.length;i++){
-    //     console.log(line.points[i].x,line.points[i].y, line.points[i].normalCos,line.points[i].normalSin);
-    // }
-
-
-  return [line.points, line2.points];
+  return {p:[line.points, line2.points], mp:MasterPoint, sp:pt, girderLayout:{...girderLayout}};
 };
 // ---------------------- Test ----------------------------------
-export default Main;
+
